@@ -1,22 +1,39 @@
 const { createInstance, SepoliaConfig } = require('@zama-fhe/relayer-sdk/node');
 
 async function main() {
-  // TODO: pass from python all the necessary parameters: process.argv.slice(2);
+  const input = await new Promise((resolve) => {
+    let data = '';
+    process.stdin.on('data', (chunk) => (data += chunk));
+    process.stdin.on('end', () => resolve(JSON.parse(data)));
+  });
+
+  const { vaultAddress, curatorAddress, values } = input;
 
   const instance = await createInstance(SepoliaConfig);
 
-  // We first create a buffer for values to encrypt and register to the fhevm
-  const buffer = instance.createEncryptedInput(
-    '0x0000000000000000000000000000000000000000',
-    '0x0000000000000000000000000000000000000000',
+  // Create a buffer for all values to encrypt
+  const encryptedBuffer = instance.createEncryptedInput(
+    vaultAddress,
+    curatorAddress,
   );
 
-  buffer.add64(BigInt(23393893233));
-  buffer.add64(BigInt(1));
+  for (const value of values) {
+    encryptedBuffer.add32(value);
+  }
 
-  const ciphertexts = await buffer.encrypt();
+  // Encrypt intent values
+  const encryptedCiphertexts = await encryptedBuffer.encrypt();
 
-  console.log(ciphertexts);
+  // Convert proof and handles to hex
+  const handlesHex = encryptedCiphertexts.handles.map(
+    (h) => '0x' + Buffer.from(h).toString('hex'),
+  );
+  const inputProofHex =
+    '0x' + Buffer.from(encryptedCiphertexts.inputProof).toString('hex');
+
+  console.log(
+    JSON.stringify({ encryptedValues: handlesHex, inputProof: inputProofHex }),
+  );
 }
 
 main().catch((err) => {
