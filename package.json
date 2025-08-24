@@ -8,6 +8,13 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OrionFinanceAI/orion-finance-sdk-js/"
+  },
+  "bugs": {
+    "url": "https://github.com/OrionFinanceAI/orion-finance-sdk-js/issues"
+  },
   "scripts": {
     "start": "node src/index.js",
     "prettier": "prettier --write \"**/*.{js,json,md,sol,ts,yml}\"",
